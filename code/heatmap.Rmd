@@ -1,0 +1,109 @@
+---
+title: "Climate analysis"
+author: "Manu & Hugo"
+date: "4 February 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r config, include=FALSE}
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(mgcv)
+library(lubridate)
+source(file = 'utils.R')
+source(file = 'datapaths.R')
+data_file <- sg_file
+```
+
+## Climate analysis
+
+Climate wow nice
+
+## Loading the data
+
+```{r loading, echo=FALSE}
+# load data from CSV file
+dataraw <- load_epw(data_file)
+
+anadata <- select(dataraw, time.local, temp = Dry.Bulb.Temperature..C.)
+
+anadata %>% head %>% print
+```
+
+## Temperature heatmap plot
+
+Here is a contour plot for January.
+
+```{r temperature-jan, echo=FALSE}
+anadata_e <- create_time_cols(anadata) # add time information
+
+# January contour plot
+ggplot(
+  head(anadata_e, 24*7*4), 
+  aes(x = time.hour, y = time.day, z = temp)) +
+  scale_fill_gradient2(low = 'blue', high = 'red', 
+                       mid = 'white', midpoint = 27.5) + 
+  geom_tile(aes(fill = temp)) + 
+  geom_contour(bins = 4, color = 'black')
+
+
+```
+
+Basic plot with a little bit of smoothing.
+
+```{r temperature-smooth, echo=FALSE}
+
+ggplot(
+  anadata_e, 
+  aes(x = time.day, y = time.hour, z = temp)) +
+  scale_fill_gradient2(low = 'white', high = 'red', 
+                       mid = 'yellow', midpoint = 25) + 
+  geom_raster(interpolate = TRUE, aes(fill = temp)) +
+    theme(legend.position = 'top')
+  #geom_contour(bins = 4, color = 'black')
+
+```
+
+Plot with 2d smoothing.
+
+```{r temperature-smooth-butter, echo=FALSE}
+anadata_e$temp_s <- smooth_like_butter(anadata_e)
+
+ggplot(
+  anadata_e, 
+  aes(x = time.day, y = time.hour, z = temp_s)) +
+  scale_fill_gradient2(low = 'white', high = 'red', 
+                       mid = 'yellow', midpoint = 25) + 
+  geom_raster(interpolate = TRUE, aes(fill = temp_s)) +
+    theme(legend.position = 'top')
+
+```
+
+
+We split the smoothed data into levels for the next trick.
+
+```{r temperature-levels, echo=FALSE}
+
+# split the data into levels
+anadata_e$tl <- cut(anadata_e$temp_s, breaks = c(-Inf, 25.9, 27, 29, +Inf))
+
+ggplot(
+  anadata_e, 
+  aes(x = time.day, y = time.hour, fill = tl)) +
+  scale_fill_manual(name = 'Temperature levels', 
+                    values = c('cyan', 'yellow', 'orange', 'red')) + 
+  geom_tile() +
+    theme(legend.position = 'top')
+
+```
+
+
+
+
+
