@@ -22,6 +22,7 @@ create_time_cols <- function(tse) {
   tse$time.hour <- hour(tse$time.local)
   tse$time.day <- as.POSIXct(trunc(tse$time.local, 'day'))
   tse$time.wday <- wday(tse$time.local)
+  tse$time.mday <- mday(tse$time.local)
   tse$time.month <- month(tse$time.local)
   tse$time.year <- year(tse$time.local)
   
