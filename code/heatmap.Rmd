@@ -97,11 +97,11 @@ We split the smoothed data into levels for the next trick.
 anadata_e$tl <- cut(anadata_e$temp, breaks = c(-Inf, 25.9, 27, 29, +Inf))
 
 ggplot(
-  anadata_e, 
-  aes(x = time.day, y = time.hour, fill = tl)) +
+  head(anadata_e, 31*24), 
+  aes(y= time.day, x = time.hour, fill = tl)) +
   scale_fill_manual(name = 'Temperature levels', 
                     values = brewer.pal(name = 'RdBu', 4) %>% rev,
-                    labels = c('>21', '<25.9', '<27', '<29', '<33.8')) + 
+                    labels = c('>21', '>25.9', '>27', '>29')) + 
   geom_tile() +
     theme(legend.position = 'top')
 
@@ -120,11 +120,11 @@ daily_stats <- data.frame(
   maxmax = select(daily_stats, -time.day) %>% apply(1, max, na.rm = T)) %>%
   arrange(time.day)
   
-ggplot(daily_stats, 
+ggplot(head(daily_stats, 30), 
        aes(x = time.day, ymin = minmin, ymax = maxmax, color = av)) +
     scale_color_gradient2(low = 'white', high = 'red', 
                        mid = 'yellow', midpoint = 25) + 
-  geom_errorbar(linetype = 'solid', position = "dodge", width = 0.25)
+  geom_errorbar(linetype = 'solid', position = "dodge", width = 3)
 
 #ggplot(daily_stats,  aes(x = time.day),)
 ```
